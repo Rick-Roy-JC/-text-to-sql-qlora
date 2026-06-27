@@ -67,7 +67,11 @@ def build_model_and_tokenizer(config: dict, lora_rank: int):
         base_model_name,
         quantization_config=bnb_config,
         device_map="auto",
-        trust_remote_code=True,
+        # trust_remote_code intentionally omitted: it pulls Phi-3's own cached
+        # modeling_phi3.py from the HF Hub, which expects the old
+        # rope_scaling["type"] key. Current transformers (>=4.44) ships a
+        # native, version-matched Phi-3 implementation using rope_scaling["rope_type"] —
+        # using that built-in implementation avoids the KeyError entirely.
     )
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=config["training"]["gradient_checkpointing"])
 
