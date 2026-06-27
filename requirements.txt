@@ -1,0 +1,24 @@
+# Local (Windows/Git Bash, Python 3.11) — data prep, eval harness, Gradio demo.
+# bitsandbytes/QLoRA training deps are NOT expected to run locally; install
+# this same file on Colab/Kaggle where the GPU-dependent packages activate.
+
+# Core
+torch>=2.2.0
+transformers>=4.44.0
+datasets>=2.20.0
+accelerate>=0.33.0
+peft>=0.12.0
+bitsandbytes>=0.43.1   # QLoRA 4-bit — Colab/Kaggle only, CUDA required
+trl>=0.9.6
+
+# Data / eval
+sqlparse>=0.5.0
+sqlite-utils>=3.36
+pandas>=2.2.0
+tqdm>=4.66.0
+
+# Demo
+gradio>=4.40.0
+
+# Config
+pyyaml>=6.0.1

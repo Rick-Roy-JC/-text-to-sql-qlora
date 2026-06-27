@@ -1,0 +1,25 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# Data (downloaded, not committed)
+data/spider/
+data/raw/
+*.sqlite
+*.db
+
+# Model artifacts
+adapters/*
+!adapters/.gitkeep
+*.safetensors
+*.bin
+checkpoints/
+
+# Notebooks checkpoints
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
