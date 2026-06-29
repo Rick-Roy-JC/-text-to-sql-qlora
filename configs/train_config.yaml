@@ -8,7 +8,11 @@ model:
 quantization:
   load_in_4bit: true
   bnb_4bit_quant_type: "nf4"
-  bnb_4bit_compute_dtype: "bfloat16"
+  # float16, not bfloat16: T4 is Turing (compute capability 7.5) and has no
+  # native bf16 Tensor Core support (added in Ampere+). bf16 here silently
+  # falls back to a slow non-tensor-core path — this was the actual cause
+  # of the ~60x-slower-than-budgeted training speed, not collator padding.
+  bnb_4bit_compute_dtype: "float16"
   bnb_4bit_use_double_quant: true
 
 lora:
@@ -43,6 +47,12 @@ training:
   # effective batch size at 16 via grad accumulation instead of larger micro-batches.
   per_device_train_batch_size: 1
   gradient_accumulation_steps: 16
+  # Eval batch size must be set explicitly — HF's default (8) at ~3500-token
+  # sequences caused a 10.22 GiB OOM during evaluation (training itself was
+  # fine at batch=1). eval_accumulation_steps=1 keeps eval logits off GPU
+  # between batches instead of accumulating them across the whole eval set.
+  per_device_eval_batch_size: 1
+  eval_accumulation_steps: 1
   learning_rate: 2.0e-4
   lr_scheduler_type: "cosine"
   warmup_ratio: 0.03
@@ -50,7 +60,10 @@ training:
   logging_steps: 10
   save_steps: 50
   gradient_checkpointing: true
-  bf16: true
+  # fp16, not bf16: T4 has no native bf16 Tensor Core support (Turing,
+  # compute capability 7.5) — see quantization.bnb_4bit_compute_dtype note.
+  fp16: true
+  bf16: false
   seed: 42
 
 output:
