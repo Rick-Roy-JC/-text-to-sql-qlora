@@ -10,11 +10,10 @@ data/raw/
 *.sqlite
 *.db
 
-# Model artifacts
-adapters/*
-!adapters/.gitkeep
-*.safetensors
-*.bin
+# Model artifacts — adapters/ (final trained LoRA weights) are committed
+# intentionally so reviewers can load them directly. Intermediate training
+# checkpoints (optimizer/scheduler/scaler state) stay out — large, ephemeral,
+# and already persisted to Drive during training.
 checkpoints/
 
 # Notebooks checkpoints
