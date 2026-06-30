@@ -211,6 +211,18 @@ def main():
     last_checkpoint = get_last_checkpoint(output_dir) if os.path.isdir(output_dir) else None
     if last_checkpoint:
         print(f"[train] Resuming from checkpoint: {last_checkpoint}")
+        # Known rough edge with this transformers/accelerate/bitsandbytes combo
+        # (paged_adamw_8bit + fp16): accelerator.scaler can be None even with
+        # fp16=True, but _load_scaler() still unconditionally loads scaler.pt
+        # if present, crashing with AttributeError on a None scaler. GradScaler
+        # state is just the dynamic loss-scale factor, not model/optimizer/
+        # scheduler state, so dropping it is safe — it just re-calibrates over
+        # the first few resumed steps.
+        if trainer.accelerator.scaler is None:
+            scaler_path = os.path.join(last_checkpoint, "scaler.pt")
+            if os.path.isfile(scaler_path):
+                print(f"[train] accelerator.scaler is None but {scaler_path} exists — removing it to avoid a crash in _load_scaler (safe: only resets fp16 loss-scale calibration, not training progress).")
+                os.remove(scaler_path)
     else:
         print(f"[train] No existing checkpoint at {output_dir} — starting fresh.")
 
